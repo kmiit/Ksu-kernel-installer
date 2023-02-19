@@ -1,0 +1,7 @@
+id=Flash_ksu_boot
+name=Flash ksu via ksu manager
+version=1.0
+versionCode=1
+author=kmiit
+description=this module can reflash boot-ksu.img(or any other boot.img) through ksu manager instead of anykernel3, dd, fastboot flash or any other tools
+updateJson=
