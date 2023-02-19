@@ -4,7 +4,6 @@ SKIPUNZIP=1
 PATCHBOOT(){
 if [ -z $1 ]; then
 SLOT=""
-ui_print "Your device is A only"
 else
 if [ $1 -eq 0]; then 
 SLOT="_a"
@@ -26,13 +25,8 @@ ui_print "Done."
 TMPDIR=/data/local/tmp_ksu_install
 mkdir $TMPDIR 2>/dev/null
 ui_print "extracting fies..."
-extract "$ZIPFILE" 'Image'       "$TMPDIR"
-extract "$ZIPFILE" 'bootctl'      "$TMPDIR"
-extract "$ZIPFILE" 'magiskboot'  "$TMPDIR"
 unzip "$ZIPFILE" -d "$TMPDIR"
 cd $TMPDIR
-A=`ls`
-ui_print "$A"
 chmod 755 magiskboot
 chmod 755 bootctl
 
@@ -52,4 +46,4 @@ FLASHBOOT
 ui_print "unknown device slots"
 esac
 
-#rm -rf $TMPDIR
+rm -rf $TMPDIR
