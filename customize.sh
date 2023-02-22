@@ -59,7 +59,6 @@ dd if=./new.img of=/dev/block/by-name/boot$SLOT
 }
 
 MAIN(){
-ui_print "$MODPATH,$ZIPFILE"
 ui_print "Setting up environment"
 TMPDIR=/data/local/tmp_ksu_install
 mkdir $TMPDIR 2>/dev/null
