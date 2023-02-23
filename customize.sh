@@ -16,6 +16,8 @@ if [ ! -e "$TMPDIR/Image" ] && [ -e "/data/adb/stock_boot.img" ];then
 ui_print "Restore boot..."
 dd if=/data/adb/stock_boot.img of=$BOOTPATH
 ui_print "Done"
+else
+ui_print "Skip restoring boot"
 fi
 rm -rf $TMPDIR
 exit
@@ -30,6 +32,7 @@ elif [ $1 -eq 1 ]; then
 SLOT="_b"
 fi
 BOOTPATH=/dev/block/by-name/boot$SLOT
+if [ -e $BOOTPATH ];then
 blockdev --setrw $BOOTPATH 2>/dev/null
 RESTOREBOOT
 BACKUPBOOT
@@ -40,6 +43,9 @@ ui_print "Patching boot.img"
 mv ./Image ./kernel
 ./magiskboot repack boot.img new.img
 ui_print "Done"
+else
+abort "Fail to find device boot"
+fi
 }
 
 CHECKOTA(){
@@ -56,6 +62,11 @@ ui_print "Your device has OTAed (if you had not change the boot slot by yourself
 FLASHBOOT(){
 ui_print "Flashing new boot to boot$SLOT"
 dd if=./new.img of=/dev/block/by-name/boot$SLOT
+if [ $? -eq 0 ]; then
+ui_print "Succeed"
+else
+abort "Fail to flash boot with dd"
+fi
 }
 
 MAIN(){
