@@ -2,9 +2,9 @@
 SKIPUNZIP=1
 
 BACKUPBOOT(){
-    if [ $ifota -eq 1 ] || [ ! -e "/data/adb/stock_boot.img" ]; then
+    if [ $ifota -eq 1 ] || [ ! -e $BACKUPFULE ]; then
         ui_print "Backup boot..."
-        dd if=$BOOTPATH of=/data/adb/stock_boot.img
+        dd if=$BOOTPATH of=$BACKUPFILE
         ui_print "Done"
     else
         ui_print "Not backup boot"
@@ -12,16 +12,16 @@ BACKUPBOOT(){
 }
 
 RESTOREBOOT(){
-    if [ -e "/data/adb/stock_boot.img" ];then
+    if [ -e $BACKUPFILE ];then
         ui_print "Restore boot to boot_a"
-        dd if=/data/adb/stock_boot.img of=${BOOTPATH%_*}_a
+        dd if=$BACKUPFILE of=${BOOTPATH%_*}_a
         if [ $? -eq 0 ];then
             ui_print "Done"
         else
             abort "Fail to restore boot"
         fi
         ui_print "Restore boot to boot_b"
-        dd if="/data/adb/stock_boot.img" of="${BOOTPATH%_*}_b"
+        dd if=$BACKUPFILE of="${BOOTPATH%_*}_b"
         if [ $? -eq 0 ];then
             ui_print "Done"
             rm -rf $TMPDIR
@@ -36,7 +36,6 @@ RESTOREBOOT(){
 
 PATCHBOOT(){
     if [ -e $BOOTPATH ];then
-        BACKUPBOOT
         ui_print "Fetching boot.img"
         dd if=$BOOTPATH of=./boot.img
         ./magiskboot unpack boot.img
@@ -57,9 +56,8 @@ CHECKOTA(){
     current_slot=`./bootctl get-current-slot`
     target_slot=`./bootctl get-active-boot-slot`
     if [ $current_slot -eq $target_slot ]; then
-        ifota=0
+        ui_print "Your device is not OTAed"
     else
-        ifota=1
         ui_print "Your device has OTAed (if you had not change the boot slot by yourself)"
         ui_print "Set target slot writable"
         case $target_slot in
@@ -76,6 +74,7 @@ CHECKOTA(){
         blockdev --setrw $BOOTPATH 2>/dev/null
         ui_print "Done"
     fi
+    BACKUPBOOT
 }
 
 FLASHIMAGE(){
@@ -96,7 +95,7 @@ FLASHIMAGE(){
 
 FLASHBOOT(){
     ui_print "Flashing new boot to boot$SLOT"
-    dd if=./new.img of=/dev/block/by-name/boot$SLOT
+    dd if=./new.img of=$BOOTPATH
     if [ $? -eq 0 ]; then
         ui_print "Succeed"
     else
@@ -114,6 +113,7 @@ MAIN(){
     chmod 755 bootctl
     ui_print "Done"
     SLOT_COUNT=`./bootctl get-number-slots`
+    BACKUPFILE=/data/adb/stock_boot_backup.img
     
     if [ -e "$TMPDIR/Image" ]; then
         ui_print "Find Image, will flash it"
@@ -121,6 +121,7 @@ MAIN(){
     elif [ -e "$TMPDIR/boot.img" ]; then
         ui_print "Find boot.img, will flash it"
         mv boot.img new.img
+        CHECKOTA
         FLASHBOOT
     else
         ui_print "Both Image or boot.img are not found, will restore boot"
