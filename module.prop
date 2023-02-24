@@ -1,6 +1,6 @@
 id=ksu_kernel_installer
 name=Ksu kernel installer
-version=1.7
-versionCode=8
+version=1.7.1
+versionCode=9
 author=kmiit
 description=使用ksu管理器安装ksu内核或boot/this module can flash ksu kernel/boot.img(or any other kernel/boot.img) through ksu manager instead of anykernel3, dd, fastboot flash or any other tools

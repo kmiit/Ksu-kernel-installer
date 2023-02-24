@@ -55,22 +55,22 @@ PATCHBOOT(){
 CHECKOTA(){
     current_slot=`./bootctl get-current-slot`
     target_slot=`./bootctl get-active-boot-slot`
+    case $target_slot in
+    [0])
+        SLOT="_a"
+    ;;
+    [1])
+        SLOT="_b"
+    ;;
+    *)
+        SLOT=""
+    esac
+    BOOTPATH=/dev/block/by-name/boot$SLOT
     if [ $current_slot -eq $target_slot ]; then
         ui_print "Your device is not OTAed"
     else
         ui_print "Your device has OTAed (if you had not change the boot slot by yourself)"
         ui_print "Set target slot writable"
-        case $target_slot in
-        [0])
-            SLOT="_a"
-        ;;
-        [1])
-            SLOT="_b"
-        ;;
-        *)
-            SLOT=""
-        esac
-        BOOTPATH=/dev/block/by-name/boot$SLOT
         blockdev --setrw $BOOTPATH 2>/dev/null
         ui_print "Done"
     fi
@@ -116,10 +116,10 @@ MAIN(){
     BACKUPFILE=/data/adb/stock_boot_backup.img
     
     if [ -e "$TMPDIR/Image" ]; then
-        ui_print "Find Image, will flash it"
+        ui_print "Find Image, will flash it later"
         FLASHIMAGE
     elif [ -e "$TMPDIR/boot.img" ]; then
-        ui_print "Find boot.img, will flash it"
+        ui_print "Find boot.img, will flash it later"
         mv boot.img new.img
         CHECKOTA
         FLASHBOOT
