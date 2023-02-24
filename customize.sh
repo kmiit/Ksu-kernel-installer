@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/sbin/bash
 SKIPUNZIP=1
 
 BACKUPBOOT(){
@@ -12,9 +12,16 @@ BACKUPBOOT(){
 }
 
 RESTOREBOOT(){
-    if [ ! -e "$TMPDIR/Image" ] && [ -e "/data/adb/stock_boot.img" ];then
-        ui_print "Restore boot..."
-        dd if=/data/adb/stock_boot.img of=$BOOTPATH
+    if [ -e "/data/adb/stock_boot.img" ];then
+        ui_print "Restore boot to boot_a"
+        dd if=/data/adb/stock_boot.img of=${BOOTPATH%_*}_a
+        if [ $? -eq 0 ];then
+            ui_print "Done"
+        else
+            abort "Fail to restore boot"
+        fi
+        ui_print "Restore boot to boot_b"
+        dd if="/data/adb/stock_boot.img" of="${BOOTPATH%_*}_b"
         if [ $? -eq 0 ];then
             ui_print "Done"
             rm -rf $TMPDIR
@@ -22,28 +29,13 @@ RESTOREBOOT(){
         else
             abort "Fail to restore boot"
         fi
-    elif [ ! -e "$TMPDIR/Image" ] && [ ! -e "/data/adb/stock_boot.img" ];then
-        abort "Both Image or stock_boot are not found"
-    elif [  -e "$TMPDIR/Image" ]; then
-        ui_print "Skip restore boot
+    else
+        abort "Fail to find stock_boot"
     fi
 }
 
 PATCHBOOT(){
-    case $1 in
-    [0])
-        SLOT="_a"
-    ;;
-    [1])
-        SLOT="b"
-    ;;
-    *)
-        SLOT=""
-    esac
-    BOOTPATH=/dev/block/by-name/boot$SLOT
     if [ -e $BOOTPATH ];then
-        blockdev --setrw $BOOTPATH 2>/dev/null
-        RESTOREBOOT
         BACKUPBOOT
         ui_print "Fetching boot.img"
         dd if=$BOOTPATH of=./boot.img
@@ -55,6 +47,7 @@ PATCHBOOT(){
             ui_print "Done"
         else
             abort "Fail to patch boot"
+        fi
     else
         abort "Fail to find device boot"
     fi
@@ -67,8 +60,38 @@ CHECKOTA(){
         ifota=0
     else
         ifota=1
+        ui_print "Your device has OTAed (if you had not change the boot slot by yourself)"
+        ui_print "Set target slot writable"
+        case $target_slot in
+        [0])
+            SLOT="_a"
+        ;;
+        [1])
+            SLOT="_b"
+        ;;
+        *)
+            SLOT=""
+        esac
+        BOOTPATH=/dev/block/by-name/boot$SLOT
+        blockdev --setrw $BOOTPATH 2>/dev/null
+        ui_print "Done"
     fi
-    ui_print "Your device has OTAed (if you had not change the boot slot by yourself)"
+}
+
+FLASHIMAGE(){
+    case $SLOT_COUNT in
+    [1])
+        PATCHBOOT
+        FLASHBOOT
+    ;;
+    [2])
+        CHECKOTA
+        PATCHBOOT
+        FLASHBOOT
+    ;;
+    *)
+        ui_print "unknown device slots"
+    esac
 }
 
 FLASHBOOT(){
@@ -90,21 +113,20 @@ MAIN(){
     chmod 755 magiskboot
     chmod 755 bootctl
     ui_print "Done"
-
     SLOT_COUNT=`./bootctl get-number-slots`
-    case $SLOT_COUNT in
-    [1])
-        PATCHBOOT
+    
+    if [ -e "$TMPDIR/Image" ]; then
+        ui_print "Find Image, will flash it"
+        FLASHIMAGE
+    elif [ -e "$TMPDIR/boot.img" ]; then
+        ui_print "Find boot.img, will flash it"
+        mv boot.img new.img
         FLASHBOOT
-    ;;
-    [2])
-        CHECKOTA
-        PATCHBOOT $target_slot
-        FLASHBOOT
-    ;;
-    *)
-        ui_print "unknown device slots"
-    esac
+    else
+        ui_print "Both Image or boot.img are not found, will restore boot"
+        RESTOREBOOT
+    fi
 }
 
 MAIN
+
