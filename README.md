@@ -4,7 +4,7 @@
  
 # Support
  - Backup&Restore boot / 备份/恢复boot
- - Flash kernel or boot.img / 刷写内核或boot(boot暂未测试)
+ - Flash kernel or boot.img / 刷写内核或boot
  - Flash to target boot slot after OTA / 刷入ota后的槽位（重启前）
 
 # How to use
@@ -26,8 +26,8 @@
 
 # 注意
  - 备份文件为/data/adb/stock_boot_backup.img，不要随意删除
- - 不一定适合所有设备
- - 目前只在Redmi k60pro （gki2.0 5.15 vab）测试成功
+ - 不一定适合所有设备(理论支持所有米系，a only可能不太友好，没机子测试）
+ - 目前只在Redmi k60pro（socrates/gki2.0/5.15/vab）所有功能测试成功
  - 备份只会在ota后重启前或第一次刷这个模块时触发
  - 备份boot只会保留本次刷写前对应分区的boot
  - ota后请只刷入一次ksu内核，否则可能破坏备份的官方boot
