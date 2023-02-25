@@ -2,7 +2,7 @@
 SKIPUNZIP=1
 
 BACKUPBOOT(){
-    if [ $ifota -eq 1 ] || [ ! -e $BACKUPFULE ]; then
+    if [ $ifota -eq 1 ] || [ ! -e $BACKUPFILE ]; then
         ui_print "Backup boot..."
         dd if=$BOOTPATH of=$BACKUPFILE
         ui_print "Done"
