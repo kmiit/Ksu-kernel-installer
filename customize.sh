@@ -9,6 +9,7 @@ BACKUPBOOT(){
             ui_print "Done"
         else
             abort "fail"
+        fi
     else
         ui_print "Not backup boot"
     fi
