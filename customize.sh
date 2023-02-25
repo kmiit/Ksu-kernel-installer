@@ -68,23 +68,26 @@ CHECKOTA(){
     BOOTPATH=/dev/block/by-name/boot$SLOT
     if [ $current_slot -eq $target_slot ]; then
         ui_print "Your device is not OTAed"
+        ifota=0
     else
         ui_print "Your device has OTAed (if you had not change the boot slot by yourself)"
         ui_print "Set target slot writable"
         blockdev --setrw $BOOTPATH 2>/dev/null
         ui_print "Done"
+        ifota=1
     fi
-    BACKUPBOOT
 }
 
 FLASHIMAGE(){
     case $SLOT_COUNT in
     [1])
+        BACKUPBOOT
         PATCHBOOT
         FLASHBOOT
     ;;
     [2])
         CHECKOTA
+        BACKUPBOOT
         PATCHBOOT
         FLASHBOOT
     ;;
@@ -125,6 +128,7 @@ MAIN(){
         FLASHBOOT
     else
         ui_print "Both Image or boot.img are not found, will restore boot"
+        CHECKOTA
         RESTOREBOOT
     fi
 }
