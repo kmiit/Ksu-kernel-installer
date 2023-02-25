@@ -5,7 +5,10 @@ BACKUPBOOT(){
     if [ $ifota -eq 1 ] || [ ! -e $BACKUPFILE ]; then
         ui_print "Backup boot..."
         dd if=$BOOTPATH of=$BACKUPFILE
-        ui_print "Done"
+        if [ $? -eq 0 ]; then
+            ui_print "Done"
+        else
+            abort "fail"
     else
         ui_print "Not backup boot"
     fi
@@ -81,6 +84,7 @@ CHECKOTA(){
 FLASHIMAGE(){
     case $SLOT_COUNT in
     [1])
+        BOOTPATH=/dev/block/by-name/boot
         BACKUPBOOT
         PATCHBOOT
         FLASHBOOT
