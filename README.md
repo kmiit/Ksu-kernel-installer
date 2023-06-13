@@ -27,7 +27,7 @@
 
 # 注意
  - 备份文件为/data/adb/stock_boot_backup.img，不要随意删除
- - 不一定适合所有设备(理论支持所有米系，a only可能不太友好，没机子测试）
+ - 不一定适合所有设备(理论支持所有米系vab设备，a only可能不太友好，没机子测试）
  - 所有功能测试成功机型: Redmi K60Pro, Redmi K50, Xiaomi 12Pro
  - 备份只会在ota后重启前或不存在备份文件时触发
  - 备份boot只会保留本次刷写前对应分区的boot
