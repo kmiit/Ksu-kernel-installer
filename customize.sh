@@ -2,34 +2,21 @@
 SKIPUNZIP=1
 
 BACKUPBOOT(){
-    if [ $ifota -eq 1 ] || [ ! -e $BACKUPFILE ]; then
-        ui_print "Backup boot..."
-        dd if=$BOOTPATH of=$BACKUPFILE
-        if [ $? -eq 0 ]; then
-            ui_print "Done"
-        else
-            abort "fail"
-        fi
+    ui_print "Backup boot..."
+    dd if=$BOOTPATH of=$BACKUPFILE
+    if [ $? -eq 0 ]; then
+        ui_print "Done"
     else
-        ui_print "Not backup boot"
+        abort "fail"
     fi
 }
 
 RESTOREBOOT(){
     if [ -e $BACKUPFILE ];then
-        ui_print "Restore boot to boot_a"
-        dd if=$BACKUPFILE of=${BOOTPATH%_*}_a
+        ui_print "Restoring boot"
+        dd if=$BACKUPFILE of=$BOOTPATH
         if [ $? -eq 0 ];then
             ui_print "Done"
-        else
-            abort "Fail to restore boot"
-        fi
-        ui_print "Restore boot to boot_b"
-        dd if=$BACKUPFILE of="${BOOTPATH%_*}_b"
-        if [ $? -eq 0 ];then
-            ui_print "Done"
-            rm -rf $TMPDIR
-            exit 0
         else
             abort "Fail to restore boot"
         fi
